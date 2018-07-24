@@ -205,4 +205,67 @@ describe("Integration tests with bov+tendermint", () => {
     expect(tx.kind).toEqual(sendTx.kind);
     expect(tx).toEqual(sendTx);
   });
+
+  it("can search for transactions", async () => {
+    pendingWithoutBov();
+    const memo = "Test transaction " + Math.random();
+
+    const client = await Client.connect(tendermintUrl);
+    const chainId = await client.chainId();
+
+    const profile = await userProfile();
+    const faucet = faucetId(profile);
+    const faucetAddress = keyToAddress(faucet.pubkey);
+    const recipientAddress = keyToAddress((await recipient(profile, 2)).pubkey);
+
+    // check current nonce (should be 0, but don't fail if used by other)
+    const nonce = await getNonce(client, faucetAddress);
+
+    // construct a sendtx, this should be in the web4wrtie api
+    const sendTx: SendTx = {
+      kind: TransactionKind.Send,
+      chainId,
+      signer: faucet.pubkey,
+      recipient: recipientAddress,
+      memo: memo,
+      amount: {
+        whole: 500,
+        fractional: 75000,
+        tokenTicker: cash,
+      },
+    };
+    const signed = await profile.signTransaction(0, faucet, sendTx, bnsCodec, nonce);
+    const post = await client.postTx(bnsCodec.bytesToPost(signed));
+    expect(post.metadata.status).toEqual(true);
+
+    {
+      // finds transaction using tag
+      const results = await client.searchTx({ tags: [Client.fromOrToTag(faucetAddress)] });
+      expect(results.length).toBeGreaterThanOrEqual(1);
+      const mostRecentResult = results[results.length - 1];
+      expect(mostRecentResult.transaction.kind).toEqual(TransactionKind.Send);
+      expect((mostRecentResult.transaction as SendTx).memo).toEqual(memo);
+    }
+
+    {
+      // finds transaction using tag and minHeight
+      const results = await client.searchTx({ tags: [Client.fromOrToTag(faucetAddress)], minHeight: 1 });
+      expect(results.length).toBeGreaterThanOrEqual(1);
+      const mostRecentResult = results[results.length - 1];
+      expect(mostRecentResult.transaction.kind).toEqual(TransactionKind.Send);
+      expect((mostRecentResult.transaction as SendTx).memo).toEqual(memo);
+    }
+
+    {
+      // finds transaction using tag and minHeight
+      const results = await client.searchTx({
+        tags: [Client.fromOrToTag(faucetAddress)],
+        maxHeight: 500_000_000,
+      });
+      expect(results.length).toBeGreaterThanOrEqual(1);
+      const mostRecentResult = results[results.length - 1];
+      expect(mostRecentResult.transaction.kind).toEqual(TransactionKind.Send);
+      expect((mostRecentResult.transaction as SendTx).memo).toEqual(memo);
+    }
+  });
 });

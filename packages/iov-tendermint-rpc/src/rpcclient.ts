@@ -146,6 +146,7 @@ export class WebsocketClient implements RpcStreamingClient {
         if (message.type !== "message") {
           this.bridge.emit("error", `Unexcepted message type on websocket: ${message.type}`);
         }
+        console.log("xxxx msg: ", message.data.toString());
         const data = JSON.parse(message.data.toString());
         this.bridge.emit(data.id, data);
       },
@@ -267,12 +268,11 @@ class RpcEventProducer implements Producer<JsonRpcEvent> {
     const idEventSubscription = this.bridge.on(this.request.id + "#event", data => {
       const err = ifError(data);
       if (err) {
-        console.log(`eventSubsription, err: ${err}`);
         this.closeSubscriptions();
         listener.error(err);
       } else {
         const result = (data as JsonRpcSuccess).result;
-        console.log("----> event: ", JSON.stringify(result));
+        // console.log("----> event: ", JSON.stringify(result));
         listener.next(result as JsonRpcEvent);
       }
     });
@@ -293,7 +293,7 @@ class RpcEventProducer implements Producer<JsonRpcEvent> {
   }
 
   protected closeSubscriptions(): void {
-    console.log("closeSubscriptions");
+    console.log("!!CLOSE SUBSCRIPTIONS!!!");
     for (const subscription of this.subscriptions) {
       subscription.removeAllListeners();
     }

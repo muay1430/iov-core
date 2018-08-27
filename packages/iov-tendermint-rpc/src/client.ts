@@ -1,4 +1,3 @@
-// tslint:disable:no-console
 import { Stream } from "xstream";
 
 import { Adaptor, Decoder, Encoder, findAdaptor, Params, Responses } from "./adaptor";
@@ -105,7 +104,7 @@ export class Client {
     const eventStream = this.client.listen(req);
     return eventStream.map<responses.SubscriptionEvent>(event => {
       // tslint:disable-next-line:no-console
-      console.log(JSON.stringify(event));
+      // console.log(JSON.stringify(event));
       return this.r.decodeSubscriptionEvent(event);
     });
   }

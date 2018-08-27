@@ -202,6 +202,7 @@ fdescribe("Client", () => {
         expect(stream).toBeTruthy();
         const subscription = stream.subscribe({
           next: event => {
+            console.log("!!!!! GOT EVENT !!!!!");
             events.push(event);
 
             if (events.length === 2) {

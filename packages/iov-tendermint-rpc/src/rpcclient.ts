@@ -1,4 +1,5 @@
 /* tslint:disable:readonly-keyword readonly-array no-object-mutation */
+// tslint:disable:no-console
 import axios from "axios";
 import EventEmitter from "events";
 import { Listener, Producer, Stream } from "xstream";
@@ -253,6 +254,7 @@ class RpcEventProducer implements Producer<JsonRpcEvent> {
     // this should unsubscribe itself, so doesn't need to be removed explicitly
     const idSubscription = this.bridge.once(this.request.id, data => {
       const err = ifError(data);
+      console.log(`> connectToClient, err: ${err}`);
       if (err) {
         this.closeSubscriptions();
         listener.error(err);
@@ -265,10 +267,12 @@ class RpcEventProducer implements Producer<JsonRpcEvent> {
     const idEventSubscription = this.bridge.on(this.request.id + "#event", data => {
       const err = ifError(data);
       if (err) {
+        console.log(`eventSubsription, err: ${err}`);
         this.closeSubscriptions();
         listener.error(err);
       } else {
         const result = (data as JsonRpcSuccess).result;
+        console.log("----> event: ", JSON.stringify(result));
         listener.next(result as JsonRpcEvent);
       }
     });
@@ -289,6 +293,7 @@ class RpcEventProducer implements Producer<JsonRpcEvent> {
   }
 
   protected closeSubscriptions(): void {
+    console.log("closeSubscriptions");
     for (const subscription of this.subscriptions) {
       subscription.removeAllListeners();
     }

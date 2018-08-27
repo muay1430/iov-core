@@ -1,4 +1,5 @@
 // tslint:disable:readonly-keyword no-object-mutation
+// tslint:disable:no-console
 import WebSocket from "isomorphic-ws";
 
 export interface SocketWrapperCloseEvent {
@@ -117,6 +118,7 @@ export class SocketWrapper {
     if (this.socket.readyState !== WebSocket.OPEN) {
       throw new Error("Websocket is not open");
     }
+    console.log("**** Websocket send:", data, "****");
     this.socket.send(data);
   }
 }

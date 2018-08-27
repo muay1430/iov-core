@@ -6,7 +6,7 @@ import { Client } from "./client";
 import { randomId } from "./common";
 import { buildTxQuery, SubscribeRequestQuery, SubscriptionEventType } from "./requests";
 import * as responses from "./responses";
-import { HttpClient, RpcClient, WebsocketClient } from "./rpcclient";
+import { HttpClient, RpcClient /* , WebsocketClient */ } from "./rpcclient";
 
 function skipTests(): boolean {
   return !process.env.TENDERMINT_ENABLED;
@@ -137,7 +137,7 @@ function kvTestSuite(rpcFactory: () => RpcClient): void {
   });
 }
 
-describe("Client", () => {
+fdescribe("Client", () => {
   it("can connect to a given url", async () => {
     pendingWithoutTendermint();
 
@@ -161,10 +161,10 @@ describe("Client", () => {
     kvTestSuite(() => new HttpClient(tendermintUrl));
   });
 
-  describe("With WebsocketClient", () => {
+  fdescribe("With WebsocketClient", () => {
     // don't print out WebSocket errors if marked pending
-    const onError = skipTests() ? () => 0 : console.log;
-    kvTestSuite(() => new WebsocketClient(tendermintUrl, onError));
+    // const onError = skipTests() ? () => 0 : console.log;
+    // kvTestSuite(() => new WebsocketClient(tendermintUrl, onError));
 
     it("can subscribe to block header events", done => {
       pendingWithoutTendermint();
@@ -192,7 +192,7 @@ describe("Client", () => {
       })().catch(fail);
     });
 
-    it("can subscribe to transaction events", done => {
+    fit("can subscribe to transaction events", done => {
       pendingWithoutTendermint();
 
       (async () => {
@@ -217,9 +217,14 @@ describe("Client", () => {
 
         const tx1 = buildKvTx(randomId(), randomId());
         const tx2 = buildKvTx(randomId(), randomId());
+        const tx3 = buildKvTx(randomId(), randomId());
 
-        await client.broadcastTxCommit({ tx: tx1 });
-        await client.broadcastTxCommit({ tx: tx2 });
+        const res1 = await client.broadcastTxCommit({ tx: tx1 });
+        console.log("res1", res1.height);
+        const res2 = await client.broadcastTxCommit({ tx: tx2 });
+        console.log("res2", res2.height);
+        const res3 = await client.broadcastTxCommit({ tx: tx3 });
+        console.log("res3", res3.height);
       })().catch(fail);
     });
 

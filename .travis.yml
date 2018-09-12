@@ -31,8 +31,7 @@ before_install:
   fi
 
 install:
-- source ./scripts/retry.sh
-- retry 3 yarn install
+- yarn install
 
 before_script:
 # Make variables and function from Travis available in our script
@@ -76,7 +75,7 @@ before_script:
 
 script:
 - echo "use tendermint?" ${TENDERMINT_ENABLED} "use bov?" ${BOV_ENABLED}
-- ./scripts/travis.sh
+- ./travis.sh
 
 after_script:
 - |
